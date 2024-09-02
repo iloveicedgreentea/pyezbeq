@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import Any, Dict, List
 
 
 @dataclass
@@ -11,10 +11,9 @@ class SearchRequest:
     edition: str
     skip_search: bool = False
     entry_id: str = ""
-    mv_adjust: float = 0.0
+    mvAdjust: float = 0.0
     dry_run_mode: bool = False
     media_type: str = ""
-    devices: List[str] = field(default_factory=list)
     slots: List[int] = field(default_factory=list)
     title: str = ""
 
@@ -23,16 +22,37 @@ class SearchRequest:
 class BeqCatalog:
     id: str
     title: str
-    sort_title: str
+    sortTitle: str
     year: int
-    audio_types: List[str]
+    audioTypes: List[str]
     digest: str
-    mv_adjust: float
+    mvAdjust: float
     edition: str
-    movie_db_id: str
+    theMovieDB: str
     author: str
+    content_type: str
+    catalogue_url: str
+    extra_fields: Dict[str, Any] = field(default_factory=dict)
 
+    def __init__(self, **kwargs: Any) -> None:
+        # Set the known fields
+        for f in self.__annotations__:
+            if f != 'extra_fields':
+                setattr(self, f, kwargs.pop(f, None))
 
+        # Set any remaining fields as extra fields
+        self.extra_fields = kwargs
+
+    def __setattr__(self, name: Any, value: Any) -> None:
+        if name in self.__annotations__:
+            super().__setattr__(name, value)
+        else:
+            self.extra_fields[name] = value
+
+    def __getattr__(self, name: Any) -> Any:
+        if name in self.extra_fields:
+            return self.extra_fields[name]
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 @dataclass
 class BeqSlot:
     id: str
@@ -47,8 +67,9 @@ class BeqSlot:
 @dataclass
 class BeqDevice:
     name: str
-    master_volume: float
     mute: bool
+    type: str
+    masterVolume: float = 0.0
     slots: List[BeqSlot] = field(default_factory=list)
 
 

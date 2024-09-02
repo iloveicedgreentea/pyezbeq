@@ -33,6 +33,7 @@ class Search:
         await self.client.aclose()
 
     async def search_catalog(self, search_request: SearchRequest) -> BeqCatalog:
+        """Search the catalog for a BEQ profile."""
         codec = self.url_encode(search_request.codec)
         url = f"{self.server_url}/api/1/search?audiotypes={codec}&years={search_request.year}&tmdbid={search_request.tmdb}"
 
@@ -52,8 +53,8 @@ class Search:
 
     def _match_entry(self, entry: dict, search_request: SearchRequest) -> bool:
         self.logger.debug(f"Checking entry: {entry}")
-        audio_match = any(codec.lower() == search_request.codec.lower() for codec in entry["audio_types"])
-        if entry["movie_db_id"] == search_request.tmdb and entry["year"] == search_request.year and audio_match:
+        audio_match = any(codec.lower() == search_request.codec.lower() for codec in entry["audioTypes"])
+        if entry["theMovieDB"] == search_request.tmdb and entry["year"] == search_request.year and audio_match:
             return self._check_edition(entry.get("edition", ""), search_request.edition)
         return False
 

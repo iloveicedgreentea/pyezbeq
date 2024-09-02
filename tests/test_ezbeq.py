@@ -57,7 +57,6 @@ async def test_load_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock
         codec="DTS-X",
         preferred_author="none",
         edition="Extended",
-        devices=["master"],
         slots=[1],
     )
 
@@ -67,13 +66,13 @@ async def test_load_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock
             {
                 "id": "bd4577c143e73851d6db0697e0940a8f34633eec_416",
                 "title": "Fast Five",
-                "sort_title": "Fast Five",
+                "sortTitle": "Fast Five",
                 "year": 2011,
-                "audio_types": ["DTS-X"],
+                "audioTypes": ["DTS-X"],
                 "digest": "cd630eb58b05beb95ca47355c1d5014ea84e00ae8c8133573b77ee604cf7119c",
-                "mv_adjust": -1.5,
+                "mvAdjust": -1.5,
                 "edition": "Extended",
-                "movie_db_id": "51497",
+                "theMovieDB": "51497",
                 "author": "aron7awol",
             }
         ],
@@ -98,7 +97,6 @@ async def test_unload_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMo
         codec="DTS-X",
         preferred_author="none",
         edition="Extended",
-        devices=["master"],
         slots=[1],
     )
 
@@ -122,10 +120,10 @@ async def test_search_catalog(search_client: Search, httpx_mock: HTTPXMock):
     ]
 
     expected_results = [
-        {"digest": "cd630eb58b05beb95ca47355c1d5014ea84e00ae8c8133573b77ee604cf7119c", "mv_adjust": -1.5},
-        {"digest": "1678d7860ead948132f70ba3d823d7493bb3bb79302f308d135176bf4ff6f7d0", "mv_adjust": 0.0},
-        {"digest": "c694bb4c1f67903aebc51998cd1aae417983368e784ed04bf92d873ee1ca213d", "mv_adjust": -3.5},
-        {"digest": "f7e8c32e58b372f1ea410165607bc1f6b3f589a832fda87edaa32a17715438f7", "mv_adjust": 0.0},
+        {"digest": "cd630eb58b05beb95ca47355c1d5014ea84e00ae8c8133573b77ee604cf7119c", "mvAdjust": -1.5},
+        {"digest": "1678d7860ead948132f70ba3d823d7493bb3bb79302f308d135176bf4ff6f7d0", "mvAdjust": 0.0},
+        {"digest": "c694bb4c1f67903aebc51998cd1aae417983368e784ed04bf92d873ee1ca213d", "mvAdjust": -3.5},
+        {"digest": "f7e8c32e58b372f1ea410165607bc1f6b3f589a832fda87edaa32a17715438f7", "mvAdjust": 0.0},
     ]
 
     for request, expected in zip(search_requests, expected_results):
@@ -139,13 +137,13 @@ async def test_search_catalog(search_client: Search, httpx_mock: HTTPXMock):
                 {
                     "id": "test_id",
                     "title": "Test Movie",
-                    "sort_title": "Test Movie",
+                    "sortTitle": "Test Movie",
                     "year": request.year,
-                    "audio_types": [request.codec],
+                    "audioTypes": [request.codec],
                     "digest": expected["digest"],
-                    "mv_adjust": expected["mv_adjust"],
+                    "mvAdjust": expected["mvAdjust"],
                     "edition": request.edition,
-                    "movie_db_id": request.tmdb,
+                    "theMovieDB": request.tmdb,
                     "author": "Test Author",
                 }
             ],
@@ -156,7 +154,7 @@ async def test_search_catalog(search_client: Search, httpx_mock: HTTPXMock):
             result = await search_client.search_catalog(request)
             assert isinstance(result, BeqCatalog)
             assert result.digest == expected["digest"]
-            assert result.mv_adjust == expected["mv_adjust"]
+            assert result.mvAdjust == expected["mvAdjust"]
 
 
 @pytest.mark.asyncio
@@ -188,7 +186,6 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             codec="DTS-X",
             preferred_author="",
             edition="Extended",
-            devices=["master", "master2"],
             slots=[1],
         ),
         SearchRequest(
@@ -197,7 +194,6 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             codec="AtmosMaybe",
             preferred_author="",
             edition="",
-            devices=["master", "master2"],
             slots=[1],
         ),
         SearchRequest(
@@ -206,7 +202,6 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             codec="AtmosMaybe",
             preferred_author="",
             edition="",
-            devices=["master", "master2"],
             slots=[1],
         ),
         SearchRequest(
@@ -215,7 +210,6 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             codec="DD+Atmos5.1Maybe",
             preferred_author="",
             edition="",
-            devices=["master", "master2"],
             slots=[1],
         ),
         SearchRequest(
@@ -224,7 +218,6 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             codec="DD+Atmos7.1Maybe",
             preferred_author="",
             edition="",
-            devices=["master", "master2"],
             slots=[1],
         ),
     ]
@@ -238,13 +231,13 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
                     {
                         "id": f"test_id_{case.tmdb}",
                         "title": "Test Movie",
-                        "sort_title": "Test Movie",
+                        "sortTitle": "Test Movie",
                         "year": case.year,
-                        "audio_types": [case.codec],
+                        "audioTypes": [case.codec],
                         "digest": "test_digest",
-                        "mv_adjust": -1.5,
+                        "mvAdjust": -1.5,
                         "edition": case.edition,
-                        "movie_db_id": case.tmdb,
+                        "theMovieDB": case.tmdb,
                         "author": "Test Author",
                     }
                 ],

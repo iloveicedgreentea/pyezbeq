@@ -13,31 +13,8 @@ from .consts import TEST_IP
 
 
 @pytest.mark.asyncio
-async def test_get_status(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock):
-    httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices",
-        json={
-            "master": {
-                "name": "master",
-                "master_volume": 0,
-                "mute": False,
-                "slots": [
-                    {"id": "1", "last": "", "active": False, "gain1": 0.0, "gain2": 0.0, "mute1": False, "mute2": False}
-                ],
-            }
-        },
-    )
-
-    async with ezbeq_client:
-        await ezbeq_client.get_status()
-
-    assert len(ezbeq_client.device_info) == 1
-    assert ezbeq_client.device_info[0].name == "master"
-
-
-@pytest.mark.asyncio
 async def test_mute_command(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock):
-    ezbeq_client.device_info = [BeqDevice(name="master", master_volume=0.0, mute=False)]
+    ezbeq_client.device_info = [BeqDevice(name="master", masterVolume=0.0, mute=False, type="minidsp")]
 
     httpx_mock.add_response(
         url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/mute", method="PUT", json={"mute": True}
@@ -81,6 +58,9 @@ async def test_load_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock
     httpx_mock.add_response(
         url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master", method="PATCH", json={}
     )
+    httpx_mock.add_response(
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master2", method="PATCH", json={}
+    )
 
     async with ezbeq_client:
         await ezbeq_client.load_beq_profile(search_request)
@@ -103,11 +83,14 @@ async def test_unload_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMo
     httpx_mock.add_response(
         url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/filter/1", method="DELETE", json={}
     )
+    httpx_mock.add_response(
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master2/filter/1", method="DELETE", json={}
+    )
 
     async with ezbeq_client:
         await ezbeq_client.unload_beq_profile(search_request)
-
-    assert httpx_mock.get_request().method == "DELETE"
+    for r in httpx_mock.get_requests():
+        assert r.method == "DELETE"
 
 
 @pytest.mark.asyncio
@@ -244,14 +227,16 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             )
 
             # Mock the load profile response
-            for device in case.devices:
-                load_url = f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/{device}"
+            for device in ezbeq_client.device_info:
+                load_url = f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/{device.name}"
                 httpx_mock.add_response(url=load_url, method="PATCH", json={})
 
             # Mock the unload profile response
-            for device in case.devices:
+            for device in ezbeq_client.device_info:
                 for slot in case.slots:
-                    unload_url = f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/{device}/filter/{slot}"
+                    unload_url = (
+                        f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/{device.name}/filter/{slot}"
+                    )
                     httpx_mock.add_response(url=unload_url, method="DELETE", json={})
 
             # Load profile

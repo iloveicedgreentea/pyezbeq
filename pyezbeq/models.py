@@ -37,7 +37,7 @@ class BeqCatalog:
     def __init__(self, **kwargs: Any) -> None:
         # Set the known fields
         for f in self.__annotations__:
-            if f != 'extra_fields':
+            if f != "extra_fields":
                 setattr(self, f, kwargs.pop(f, None))
 
         # Set any remaining fields as extra fields
@@ -53,6 +53,8 @@ class BeqCatalog:
         if name in self.extra_fields:
             return self.extra_fields[name]
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+
 @dataclass
 class BeqSlot:
     id: str

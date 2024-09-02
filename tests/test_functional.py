@@ -45,31 +45,32 @@ async def test_search_and_load_profile(ezbeq_client):
         # Unload the profile
         await ezbeq_client.unload_beq_profile(search_request)
 
-# @pytest.mark.asyncio
-# async def test_mute_unmute(ezbeq_client):
-#     async with ezbeq_client:
-#         # Mute
-#         await ezbeq_client.mute_command(True)
-#         await ezbeq_client.get_status()
-#         assert ezbeq_client.device_info[0].mute is True
+@pytest.mark.asyncio
+async def test_mute_unmute(ezbeq_client):
+    async with ezbeq_client:
+        await ezbeq_client.get_status()
 
-#         # Unmute
-#         await ezbeq_client.mute_command(False)
-#         await ezbeq_client.get_status()
-#         assert ezbeq_client.device_info[0].mute is False
+        # Mute
+        await ezbeq_client.mute_command(True)
+        await ezbeq_client.get_status()
+        assert ezbeq_client.device_info[0].mute is True
 
-# @pytest.mark.asyncio
-# async def test_search_not_found(ezbeq_client):
-#     search_request = SearchRequest(
-#         tmdb="999999999",  # Non-existent TMDB ID
-#         year=2099,
-#         codec="FUTURE-CODEC",
-#         preferred_author="",
-#         edition="",
-#         devices=["master"],
-#         slots=[1]
-#     )
+        # Unmute
+        await ezbeq_client.mute_command(False)
+        await ezbeq_client.get_status()
+        assert ezbeq_client.device_info[0].mute is False
 
-#     async with ezbeq_client:
-#         with pytest.raises(Exception, match="BEQ profile was not found in catalog"):
-#             await ezbeq_client.search.search_catalog(search_request)
+@pytest.mark.asyncio
+async def test_search_not_found(ezbeq_client):
+    search_request = SearchRequest(
+        tmdb="999999999",  # Non-existent TMDB ID
+        year=2099,
+        codec="FUTURE-CODEC",
+        preferred_author="",
+        edition="",
+        slots=[1]
+    )
+
+    async with ezbeq_client:
+        with pytest.raises(Exception, match="BEQ profile was not found in catalog"):
+            await ezbeq_client.search.search_catalog(search_request)

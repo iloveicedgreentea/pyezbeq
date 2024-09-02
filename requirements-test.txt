@@ -1,0 +1,9 @@
+pylint
+build
+twine
+pytest
+pytest-asyncio
+pre-commit
+mypy
+ruff
+pytest_httpx

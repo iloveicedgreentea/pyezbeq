@@ -54,6 +54,7 @@ class Search:
     def _match_entry(self, entry: dict, search_request: SearchRequest) -> bool:
         self.logger.debug(f"Checking entry: {entry}")
         audio_match = any(codec.lower() == search_request.codec.lower() for codec in entry["audioTypes"])
+        # TODO: support no TMDB?
         if entry["theMovieDB"] == search_request.tmdb and entry["year"] == search_request.year and audio_match:
             return self._check_edition(entry.get("edition", ""), search_request.edition)
         return False

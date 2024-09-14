@@ -15,7 +15,6 @@ setuptools.setup(
     package_data={"pyezbeq": ["py.typed"]},
     classifiers=[
         "Programming Language :: Python :: 3.12",
-        "License :: OSI Approved :: GPL-3.0",
         "Operating System :: OS Independent",
     ],
 )

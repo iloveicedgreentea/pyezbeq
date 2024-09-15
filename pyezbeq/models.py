@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 @dataclass
 class SearchRequest:
+    """Search request for BEQ profiles."""
     tmdb: str
     year: int
     codec: str
@@ -20,6 +21,7 @@ class SearchRequest:
 
 @dataclass
 class BeqCatalog:
+    """BEQ profile catalog entry."""
     id: str
     title: str
     sortTitle: str
@@ -52,11 +54,14 @@ class BeqCatalog:
     def __getattr__(self, name: Any) -> Any:
         if name in self.extra_fields:
             return self.extra_fields[name]
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
 
 @dataclass
 class BeqSlot:
+    """Device slot info"""
     id: str
     last: str
     active: bool
@@ -68,6 +73,7 @@ class BeqSlot:
 
 @dataclass
 class BeqDevice:
+    """Device info"""
     name: str
     mute: bool
     type: str

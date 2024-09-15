@@ -5,3 +5,5 @@ This library implements an API client for ezbeq and various functions to determi
 ## Searching
 
 TODO
+
+Only tested with minidsp 2x4HD. Theoretically others should work but no guarantees/support.

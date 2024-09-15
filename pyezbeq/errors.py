@@ -13,3 +13,15 @@ class HeartBeatError(Exception):
 
 class CannotConnect(Exception):
     """Error to indicate we cannot connect."""
+
+
+class DeviceInfoEmpty(Exception):
+    """Error to indicate device info is empty."""
+
+
+class DataMismatch(Exception):
+    """Error to indicate data mismatch."""
+
+
+class BEQProfileNotFound(Exception):
+    """Error to indicate BEQ profile was not found in catalog."""

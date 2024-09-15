@@ -19,6 +19,7 @@ async def test_get_status(ezbeq_client):
     assert len(ezbeq_client.device_info) > 0
     assert ezbeq_client.device_info[0].name is not None
 
+
 @pytest.mark.asyncio
 async def test_search_and_load_profile(ezbeq_client):
     search_request = SearchRequest(
@@ -27,7 +28,7 @@ async def test_search_and_load_profile(ezbeq_client):
         codec="DTS-X",
         preferred_author="",
         edition="Extended",
-        slots=[1]
+        slots=[1],
     )
 
     async with ezbeq_client:
@@ -45,6 +46,7 @@ async def test_search_and_load_profile(ezbeq_client):
         # Unload the profile
         await ezbeq_client.unload_beq_profile(search_request)
 
+
 @pytest.mark.asyncio
 async def test_mute_unmute(ezbeq_client):
     async with ezbeq_client:
@@ -60,6 +62,7 @@ async def test_mute_unmute(ezbeq_client):
         await ezbeq_client.get_status()
         assert ezbeq_client.device_info[0].mute is False
 
+
 @pytest.mark.asyncio
 async def test_search_not_found(ezbeq_client):
     search_request = SearchRequest(
@@ -68,9 +71,17 @@ async def test_search_not_found(ezbeq_client):
         codec="FUTURE-CODEC",
         preferred_author="",
         edition="",
-        slots=[1]
+        slots=[1],
     )
 
     async with ezbeq_client:
         with pytest.raises(Exception, match="BEQ profile was not found in catalog"):
             await ezbeq_client.search.search_catalog(search_request)
+
+
+@pytest.mark.asyncio
+async def test_version(ezbeq_client):
+    async with ezbeq_client:
+        version = await ezbeq_client.get_version()
+        assert version is not None
+        assert isinstance(version, str)

@@ -31,6 +31,7 @@ class EzbeqClient:
         self.search = Search(host=host, port=port, scheme=scheme)
         self.client = httpx.AsyncClient(timeout=30.0)
         self.logger = logger
+        self.version = ""
 
     async def __aenter__(self) -> "EzbeqClient":
         return self
@@ -42,6 +43,22 @@ class EzbeqClient:
         exc_tb: Optional[TracebackType],
     ) -> None:
         await self.client.aclose()
+
+    async def get_version(self) -> str:
+        """Get the version of the ezbeq device."""
+        try:
+            response = await self.client.get(f"{self.server_url}/api/1/version")
+            response.raise_for_status()
+        except HTTPStatusError as e:
+            raise HTTPStatusError(
+                f"Failed to get version: {e}", request=e.request, response=e.response
+            ) from e
+        except RequestError as e:
+            raise RequestError(f"Failed to get version: {e}", request=e.request) from e
+
+        resp = response.json().get("version")
+        self.version = resp
+        return resp
 
     async def get_status(self) -> None:
         """Get the status of the ezbeq device."""
@@ -132,7 +149,9 @@ class EzbeqClient:
             )
 
         self.current_master_volume = search_request.mvAdjust
-        self.current_profile = search_request.entry_id
+        self.current_profile = (
+            search_request.entry_id
+        )  # TODO; set this to title instead?
         self.current_media_type = search_request.media_type
 
         if search_request.entry_id == "":

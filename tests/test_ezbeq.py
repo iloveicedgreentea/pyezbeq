@@ -9,15 +9,19 @@ from pyezbeq.ezbeq import EzbeqClient
 from pyezbeq.models import BeqCatalog, BeqDevice, SearchRequest
 from pyezbeq.search import Search
 
-from .consts import TEST_IP
+from .consts import TEST_IP, MOCK_RESPONSE
 
 
 @pytest.mark.asyncio
 async def test_mute_command(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock):
-    ezbeq_client.device_info = [BeqDevice(name="master", masterVolume=0.0, mute=False, type="minidsp")]
+    ezbeq_client.device_info = [
+        BeqDevice(name="master", masterVolume=0.0, mute=False, type="minidsp")
+    ]
 
     httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/mute", method="PUT", json={"mute": True}
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/mute",
+        method="PUT",
+        json={"mute": True},
     )
 
     async with ezbeq_client:
@@ -56,16 +60,24 @@ async def test_load_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMock
     )
 
     httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master", method="PATCH", json={}
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master",
+        method="PATCH",
+        json={},
     )
     httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master2", method="PATCH", json={}
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/master2",
+        method="PATCH",
+        json={},
+    )
+    httpx_mock.add_response(
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices",
+        method="GET",
+        json=MOCK_RESPONSE,
     )
 
     async with ezbeq_client:
         await ezbeq_client.load_beq_profile(search_request)
 
-    assert ezbeq_client.current_profile == "bd4577c143e73851d6db0697e0940a8f34633eec_416"
     assert ezbeq_client.current_master_volume == -1.5
 
 
@@ -81,32 +93,69 @@ async def test_unload_beq_profile(ezbeq_client: EzbeqClient, httpx_mock: HTTPXMo
     )
 
     httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/filter/1", method="DELETE", json={}
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master/filter/1",
+        method="DELETE",
+        json={},
     )
     httpx_mock.add_response(
-        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master2/filter/1", method="DELETE", json={}
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/master2/filter/1",
+        method="DELETE",
+        json={},
+    )
+    httpx_mock.add_response(
+        url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices",
+        method="GET",
+        json=MOCK_RESPONSE,
     )
 
     async with ezbeq_client:
         await ezbeq_client.unload_beq_profile(search_request)
-    for r in httpx_mock.get_requests():
+    for r in httpx_mock.get_requests()[0:2]:
         assert r.method == "DELETE"
 
 
 @pytest.mark.asyncio
 async def test_search_catalog(search_client: Search, httpx_mock: HTTPXMock):
     search_requests = [
-        SearchRequest(tmdb="51497", year=2011, codec="DTS-X", preferred_author="", edition="Extended"),
-        SearchRequest(tmdb="843794", year=2023, codec="DD+ Atmos", preferred_author="", edition=""),
-        SearchRequest(tmdb="429351", year=2018, codec="DTS-HD MA 7.1", preferred_author="aron7awol", edition=""),
-        SearchRequest(tmdb="56292", year=2011, codec="TrueHD 7.1", preferred_author="", edition=""),
+        SearchRequest(
+            tmdb="51497",
+            year=2011,
+            codec="DTS-X",
+            preferred_author="",
+            edition="Extended",
+        ),
+        SearchRequest(
+            tmdb="843794", year=2023, codec="DD+ Atmos", preferred_author="", edition=""
+        ),
+        SearchRequest(
+            tmdb="429351",
+            year=2018,
+            codec="DTS-HD MA 7.1",
+            preferred_author="aron7awol",
+            edition="",
+        ),
+        SearchRequest(
+            tmdb="56292", year=2011, codec="TrueHD 7.1", preferred_author="", edition=""
+        ),
     ]
 
     expected_results = [
-        {"digest": "cd630eb58b05beb95ca47355c1d5014ea84e00ae8c8133573b77ee604cf7119c", "mvAdjust": -1.5},
-        {"digest": "1678d7860ead948132f70ba3d823d7493bb3bb79302f308d135176bf4ff6f7d0", "mvAdjust": 0.0},
-        {"digest": "c694bb4c1f67903aebc51998cd1aae417983368e784ed04bf92d873ee1ca213d", "mvAdjust": -3.5},
-        {"digest": "f7e8c32e58b372f1ea410165607bc1f6b3f589a832fda87edaa32a17715438f7", "mvAdjust": 0.0},
+        {
+            "digest": "cd630eb58b05beb95ca47355c1d5014ea84e00ae8c8133573b77ee604cf7119c",
+            "mvAdjust": -1.5,
+        },
+        {
+            "digest": "1678d7860ead948132f70ba3d823d7493bb3bb79302f308d135176bf4ff6f7d0",
+            "mvAdjust": 0.0,
+        },
+        {
+            "digest": "c694bb4c1f67903aebc51998cd1aae417983368e784ed04bf92d873ee1ca213d",
+            "mvAdjust": -3.5,
+        },
+        {
+            "digest": "f7e8c32e58b372f1ea410165607bc1f6b3f589a832fda87edaa32a17715438f7",
+            "mvAdjust": 0.0,
+        },
     ]
 
     for request, expected in zip(search_requests, expected_results):
@@ -225,7 +274,11 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
                     }
                 ],
             )
-
+            httpx_mock.add_response(
+                url=f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices",
+                method="GET",
+                json=MOCK_RESPONSE,
+            )
             # Mock the load profile response
             for device in ezbeq_client.device_info:
                 load_url = f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/2/devices/{device.name}"
@@ -234,14 +287,11 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
             # Mock the unload profile response
             for device in ezbeq_client.device_info:
                 for slot in case.slots:
-                    unload_url = (
-                        f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/{device.name}/filter/{slot}"
-                    )
+                    unload_url = f"{DEFAULT_SCHEME}://{TEST_IP}:{DEFAULT_PORT}/api/1/devices/{device.name}/filter/{slot}"
                     httpx_mock.add_response(url=unload_url, method="DELETE", json={})
 
             # Load profile
             await ezbeq_client.load_beq_profile(case)
-            assert ezbeq_client.current_profile == f"test_id_{case.tmdb}"
             assert ezbeq_client.current_master_volume == -1.5
 
             # Unload profile
@@ -270,4 +320,7 @@ def test_has_author(author, expected):
 def test_build_author_whitelist():
     base_url = "/api/1/search?audiotypes=dts-x&years=2011&tmdbid=12345"
     result = Search._build_author_whitelist("aron7awol, mobe1969", base_url)
-    assert result == "/api/1/search?audiotypes=dts-x&years=2011&tmdbid=12345&authors=aron7awol&authors=mobe1969"
+    assert (
+        result
+        == "/api/1/search?audiotypes=dts-x&years=2011&tmdbid=12345&authors=aron7awol&authors=mobe1969"
+    )

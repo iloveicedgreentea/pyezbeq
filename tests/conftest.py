@@ -12,14 +12,34 @@ MOCK_DEVICE_INFO = [
         name="master",
         masterVolume=-10.0,
         mute=False,
-        slots=[BeqSlot(id="1", last="", active=False, gain1=0.0, gain2=0.0, mute1=False, mute2=False)],
+        slots=[
+            BeqSlot(
+                id="1",
+                last="",
+                active=False,
+                gain1=0.0,
+                gain2=0.0,
+                mute1=False,
+                mute2=False,
+            )
+        ],
         type="minidsp",
     ),
     BeqDevice(
         name="master2",
         masterVolume=-5.0,
         mute=False,
-        slots=[BeqSlot(id="1", last="", active=False, gain1=0.0, gain2=0.0, mute1=False, mute2=False)],
+        slots=[
+            BeqSlot(
+                id="1",
+                last="Fast Five",
+                active=False,
+                gain1=0.0,
+                gain2=0.0,
+                mute1=False,
+                mute2=False,
+            )
+        ],
         type="minidsp",
     ),
 ]
@@ -37,3 +57,4 @@ def ezbeq_client() -> EzbeqClient:
 @pytest.fixture
 def search_client() -> Search:
     return Search(host=TEST_IP)
+

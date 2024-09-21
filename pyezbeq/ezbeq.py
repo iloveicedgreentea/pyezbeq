@@ -6,7 +6,7 @@ from urllib.parse import quote
 import httpx
 from httpx import HTTPStatusError, RequestError
 from pyezbeq.consts import DEFAULT_PORT, DEFAULT_SCHEME, DISCOVERY_ADDRESS
-from pyezbeq.models import BeqCatalog, BeqDevice, SearchRequest
+from pyezbeq.models import BeqCatalog, BeqDevice, SearchRequest, BeqSlot
 from pyezbeq.search import Search
 from pyezbeq.errors import DeviceInfoEmpty, DataMismatch, BEQProfileNotFound
 
@@ -72,13 +72,53 @@ class EzbeqClient:
         except RequestError as e:
             raise RequestError(f"Failed to get status: {e}", request=e.request) from e
 
-        data = response.json()
+        data: Dict[str, Any] = response.json()
         self.logger.debug(f"Got status: {data}")
-        self.device_info = [BeqDevice(**device) for device in data.values()]
-        self.logger.debug(f"Device info: {self.device_info}")
+        self.update_device_data(data)
+        self.logger.debug("Device info: %s", self.device_info)
 
         if not self.device_info:
             raise DeviceInfoEmpty("No devices found")
+
+    def update_device_data(self, data: Dict[str, Any]) -> None:
+        """Refresh internal state with new device data."""
+        self.device_info = [self.create_beq_device(device) for device in data.values()]
+        self.current_profile = self.find_current_profile(self.device_info)
+
+    def create_beq_device(self, device_data: Dict[str, Any]) -> BeqDevice:
+        """Create a BEQ device from the device data."""
+        slots = [
+            BeqSlot(
+                id=slot["id"],
+                last=slot["last"],
+                active=slot["active"],
+                gain1=slot["gains"][0]["value"],
+                gain2=slot["gains"][1]["value"],
+                mute1=slot["mutes"][0]["value"],
+                mute2=slot["mutes"][1]["value"],
+            )
+            for slot in device_data["slots"]
+        ]
+
+        return BeqDevice(
+            name=device_data["name"],
+            mute=device_data["mute"],
+            type=device_data["type"],
+            masterVolume=device_data["masterVolume"],
+            slots=slots,
+        )
+
+    def find_current_profile(self, device_info: List[BeqDevice]) -> str:
+        """Find the current profile name."""
+        for device in device_info:
+            self.logger.debug(
+                f"Checking device {device.name} with slots {device.slots}"
+            )
+            for slot in device.slots:
+                if slot.last:
+                    self.logger.debug("Found profile %s", slot.last)
+                    return slot.last
+        return ""
 
     async def mute_command(self, status: bool) -> None:
         """Set the mute status of the ezbeq device."""
@@ -149,9 +189,6 @@ class EzbeqClient:
             )
 
         self.current_master_volume = search_request.mvAdjust
-        self.current_profile = (
-            search_request.entry_id
-        )  # TODO; set this to title instead?
         self.current_media_type = search_request.media_type
 
         if search_request.entry_id == "":
@@ -189,6 +226,8 @@ class EzbeqClient:
                 raise RequestError(
                     f"Failed to load BEQ profile for {device}: {e}", request=e.request
                 ) from e
+        # refresh status
+        await self.get_status()
 
     async def unload_beq_profile(self, search_request: SearchRequest) -> None:
         """Unload a BEQ profile from the ezbeq device."""
@@ -212,6 +251,8 @@ class EzbeqClient:
                         f"Failed to unload BEQ profile for {device.name}, slot {slot}: {e}",
                         request=e.request,
                     ) from e
+        # refresh status
+        await self.get_status()
 
     @staticmethod
     def url_encode(s: str) -> str:

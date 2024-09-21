@@ -40,7 +40,7 @@ async def test_search_and_load_profile(ezbeq_client):
 
         # Load the profile
         await ezbeq_client.load_beq_profile(search_request)
-        assert ezbeq_client.current_profile is not None
+        assert ezbeq_client.current_profile == "Fast Five"
         assert ezbeq_client.current_master_volume is not None
         await asyncio.sleep(1)  # Wait for the profile to load
         # Unload the profile

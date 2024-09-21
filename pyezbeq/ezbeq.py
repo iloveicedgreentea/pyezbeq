@@ -115,7 +115,7 @@ class EzbeqClient:
                 f"Checking device {device.name} with slots {device.slots}"
             )
             for slot in device.slots:
-                if slot.last:
+                if slot.last and slot.last != "Empty":
                     self.logger.debug("Found profile %s", slot.last)
                     return slot.last
         return ""

@@ -292,6 +292,7 @@ async def test_load_profile_sequence(ezbeq_client: EzbeqClient, httpx_mock: HTTP
 
             # Load profile
             await ezbeq_client.load_beq_profile(case)
+            assert ezbeq_client.current_profile == "Fast Five"
             assert ezbeq_client.current_master_volume == -1.5
 
             # Unload profile

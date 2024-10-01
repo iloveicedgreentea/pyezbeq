@@ -22,7 +22,6 @@ class EzbeqClient:
         logger: logging.Logger = logging.getLogger(__name__),
     ):
         self.server_url = f"{scheme}://{host}:{port}"
-        self.current_profile = ""
         self.current_master_volume = 0.0
         self.current_media_type = ""
         self.mute_status = False
@@ -43,6 +42,13 @@ class EzbeqClient:
         exc_tb: Optional[TracebackType],
     ) -> None:
         await self.client.aclose()
+
+    def get_device_profile(self, device_name: str) -> str:
+        """Get the current profile of a device."""
+        for device in self.device_info:
+            if device.name == device_name:
+                return device.currentProfile
+        return ""  # or raise an exception if the device is not found
 
     async def get_version(self) -> str:
         """Get the version of the ezbeq device."""
@@ -83,7 +89,8 @@ class EzbeqClient:
     def update_device_data(self, data: Dict[str, Any]) -> None:
         """Refresh internal state with new device data."""
         self.device_info = [self.create_beq_device(device) for device in data.values()]
-        self.current_profile = self.find_current_profile(self.device_info)
+        # add current profile to device
+        self.find_current_profile()
 
     def create_beq_device(self, device_data: Dict[str, Any]) -> BeqDevice:
         """Create a BEQ device from the device data."""
@@ -108,17 +115,17 @@ class EzbeqClient:
             slots=slots,
         )
 
-    def find_current_profile(self, device_info: List[BeqDevice]) -> str:
-        """Find the current profile name."""
-        for device in device_info:
+    def find_current_profile(self) -> None:
+        """Add the current profile into the device."""
+        for device in self.device_info:
             self.logger.debug(
                 f"Checking device {device.name} with slots {device.slots}"
             )
             for slot in device.slots:
-                if slot.last and slot.last != "Empty":
+                if slot.active and slot.last and slot.last != "Empty":
                     self.logger.debug("Found profile %s", slot.last)
-                    return slot.last
-        return ""
+                    device.currentProfile = slot.last
+                    break
 
     async def mute_command(self, status: bool) -> None:
         """Set the mute status of the ezbeq device."""
@@ -226,6 +233,7 @@ class EzbeqClient:
                 raise RequestError(
                     f"Failed to load BEQ profile for {device}: {e}", request=e.request
                 ) from e
+            device.currentProfile = catalog.title
         # refresh status
         await self.get_status()
 

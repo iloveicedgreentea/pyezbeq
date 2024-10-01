@@ -77,6 +77,7 @@ class BeqDevice:
     name: str
     mute: bool
     type: str
+    currentProfile: str = ""
     masterVolume: float = 0.0
     slots: List[BeqSlot] = field(default_factory=list)
 

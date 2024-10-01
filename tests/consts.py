@@ -4,12 +4,12 @@ MOCK_RESPONSE = {
     "master": {
         "type": "minidsp",
         "name": "master",
-        "masterVolume": -0.0,
+        "masterVolume": -1.5,
         "mute": False,
         "slots": [
             {
                 "id": "1",
-                "last": "Empty",
+                "last": "Fast Five",
                 "active": True,
                 "gains": [{"id": "1", "value": 0.0}, {"id": "2", "value": 0.0}],
                 "mutes": [{"id": "1", "value": False}, {"id": "2", "value": False}],
@@ -52,7 +52,7 @@ MOCK_RESPONSE = {
     "master2": {
         "type": "minidsp",
         "name": "master2",
-        "masterVolume": -0.0,
+        "masterVolume": -1.5,
         "mute": False,
         "slots": [
             {

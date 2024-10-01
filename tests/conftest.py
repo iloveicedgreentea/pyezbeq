@@ -15,8 +15,8 @@ MOCK_DEVICE_INFO = [
         slots=[
             BeqSlot(
                 id="1",
-                last="",
-                active=False,
+                last="Fast Five",
+                active=True,
                 gain1=0.0,
                 gain2=0.0,
                 mute1=False,
@@ -33,7 +33,7 @@ MOCK_DEVICE_INFO = [
             BeqSlot(
                 id="1",
                 last="Fast Five",
-                active=False,
+                active=True,
                 gain1=0.0,
                 gain2=0.0,
                 mute1=False,

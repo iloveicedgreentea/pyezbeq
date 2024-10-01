@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyezbeq",
-    version="0.0.7",
+    version="0.0.8",
     author="iloveicedgreentea2",
     description="A package to control ezbeq",
     long_description=long_description,

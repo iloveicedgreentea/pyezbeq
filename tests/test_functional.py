@@ -17,7 +17,12 @@ async def test_get_status(ezbeq_client):
         await ezbeq_client.get_status()
 
     assert len(ezbeq_client.device_info) > 0
-    assert ezbeq_client.device_info[0].name is not None
+    for device in ezbeq_client.device_info:
+        assert device.name
+        assert device.masterVolume == -0.0
+        assert device.mute is False
+        assert device.slots
+        assert device.currentProfile != ""
 
 
 @pytest.mark.asyncio
@@ -40,8 +45,8 @@ async def test_search_and_load_profile(ezbeq_client):
 
         # Load the profile
         await ezbeq_client.load_beq_profile(search_request)
-        assert ezbeq_client.current_profile == "Fast Five"
-        assert ezbeq_client.current_master_volume is not None
+        for device in ezbeq_client.device_info:
+            assert ezbeq_client.get_device_profile(device.name) == "Fast Five"
         await asyncio.sleep(1)  # Wait for the profile to load
         # Unload the profile
         await ezbeq_client.unload_beq_profile(search_request)
